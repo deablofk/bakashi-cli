@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "dev.cwby.jasonify"
-version = ""
+version = "1.0"
 
 repositories {
     mavenCentral()

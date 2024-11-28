@@ -196,7 +196,6 @@ public class BakashiScrapper {
    */
   public static Path fetchThumbnail(final String thumbnailUrl, final String fileName)
       throws IOException {
-    System.out.println("downloading: " + thumbnailUrl);
     final Path thumbnailPath = getThumbnailPath(fileName);
     try (final ByteArrayOutputStream outputStream = fetchThumbnailOutputStream(thumbnailUrl);
         final FileOutputStream fos = new FileOutputStream(thumbnailPath.toFile())) {
