@@ -1,4 +1,5 @@
 # Bakashi CLI
+![image](https://github.com/deablofk/bakashi-cli/blob/main/image.png?raw=true)
 
 Bakashi CLI is a Java-based application designed to scrape episode information and stream videos from the Bakashi.tv
 website. It integrates tools like fzf for fuzzy searching, mpv for video playback, and optionally Ueberzug for enhanced
