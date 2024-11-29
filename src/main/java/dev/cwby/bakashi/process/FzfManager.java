@@ -1,45 +1,60 @@
 package dev.cwby.bakashi.process;
 
 import dev.cwby.bakashi.Main;
+import dev.cwby.bakashi.ThumbnailUtils;
+import dev.cwby.bakashi.data.AnimePage;
 import dev.cwby.bakashi.data.EpisodeData;
-import dev.cwby.bakashi.scrapper.BakashiScrapper;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.List;
 
 public class FzfManager {
   // TODO: requires  refactor and proper documentation
 
-  private Process process = null;
+  private Process process;
+  private final UeberzugManager ueberzugManager;
+  private final boolean isUeberzugPresent;
+  private List<EpisodeData> episodeDataList = new ArrayList<>();
+  private List<AnimePage> animePageList = new ArrayList<>();
 
-  public Process spawnWithUeberzug(final String ueberzugSocket) {
-    final String fullcmd =
-        "(fzf --reverse --preview=\"ueberzug cmd -s "
-            + ueberzugSocket
-            + " -i bakashicli -a add -x \\$FZF_PREVIEW_LEFT -y \\$FZF_PREVIEW_TOP --max-width 200 --max-height 200 -f "
-            + Main.THUMBNAIL_FOLDER
-            + "{}"
-            + BakashiScrapper.THUMB_EXTENSION
-            + "\")";
-    this.process = startShProcess(fullcmd);
+  public FzfManager(final UeberzugManager ueberzugManager) {
+    this.isUeberzugPresent = UeberzugManager.checkUeberzugPresence();
+    this.ueberzugManager = ueberzugManager;
+  }
+
+  public Process spawn() {
+    if (isUeberzugPresent) {
+      ueberzugManager.spawn();
+      final String fullcmd =
+          "(fzf --reverse --preview=\"ueberzug cmd -s "
+              + ueberzugManager.getSocket()
+              + " -i bakashicli -a add -x \\$FZF_PREVIEW_LEFT -y \\$FZF_PREVIEW_TOP --max-width \"\\$FZF_PREVIEW_COLUMNS\" --max-height \"\\$FZF_PREVIEW_LINES\" -f "
+              + Main.THUMBNAIL_FOLDER
+              + "{}"
+              + ThumbnailUtils.THUMB_EXTENSION
+              + "\")";
+      this.process = startShProcess(fullcmd);
+    } else {
+      this.process = startShProcess("(fzf --reverse)");
+    }
+
     return this.process;
   }
 
-  public void spawn() {
-    this.process = startShProcess("(fzf --reverse)");
-  }
-
   public void writeEpisodes(final List<EpisodeData> episodeDataList) {
+    this.episodeDataList = episodeDataList;
     final PrintWriter writer = new PrintWriter(process.getOutputStream());
     for (final EpisodeData episodeData : episodeDataList) {
-      if (!BakashiScrapper.thumbnailExists(episodeData.episodeName())) {
+      if (!ThumbnailUtils.thumbnailExists(episodeData.episodeName())) {
         try {
-          BakashiScrapper.fetchThumbnail(episodeData.thumbnailUrl(), episodeData.episodeName());
+          if (episodeData.thumbnailUrl() != null && episodeData.episodeName() != null) {
+            ThumbnailUtils.fetchThumbnail(episodeData.thumbnailUrl(), episodeData.episodeName());
+          }
         } catch (IOException e) {
-          throw new RuntimeException(e);
         }
       }
       writer.println(episodeData.episodeName());
@@ -48,20 +63,67 @@ public class FzfManager {
     writer.close();
   }
 
-  public String waitForSelect() {
+  public void writeAnimePages(final List<AnimePage> pageList) {
+    this.animePageList = pageList;
+    final PrintWriter writer = new PrintWriter(process.getOutputStream());
+    for (final AnimePage page : animePageList) {
+      if (!ThumbnailUtils.thumbnailExists(page.title())) {
+        try {
+          ThumbnailUtils.fetchThumbnail(page.thumbnail(), page.title());
+        } catch (IOException e) {
+        }
+      }
+      writer.println(page.title());
+    }
+    writer.flush();
+    writer.close();
+  }
+
+  public AnimePage waitForAnimeSelect() {
     try {
       final int exitCode = process.waitFor();
       if (exitCode == 0) {
-        return new BufferedReader(new InputStreamReader(process.getInputStream())).readLine();
+        final String output =
+            new BufferedReader(new InputStreamReader(process.getInputStream())).readLine();
+        for (final AnimePage page : animePageList) {
+          if (page.title().equals(output)) {
+            return page;
+          }
+        }
       }
     } catch (InterruptedException | IOException e) {
       throw new RuntimeException(e);
     }
-    return "";
+    return null;
+  }
+
+  public EpisodeData waitForEpisodeSelect() {
+    try {
+      final int exitCode = process.waitFor();
+      if (exitCode == 0) {
+        final String output =
+            new BufferedReader(new InputStreamReader(process.getInputStream())).readLine();
+        for (final EpisodeData episodeData : episodeDataList) {
+          if (episodeData.episodeName().equals(output)) {
+            return episodeData;
+          }
+        }
+      }
+    } catch (InterruptedException | IOException e) {
+      throw new RuntimeException(e);
+    }
+    return null;
   }
 
   public void exit() {
-    process.destroy();
+    if (isUeberzugPresent) {
+      ueberzugManager.exit();
+    }
+    try {
+      process.destroyForcibly().waitFor();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private static Process startShProcess(final String fullCommand) {

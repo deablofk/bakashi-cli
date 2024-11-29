@@ -37,7 +37,7 @@ tasks.named<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJ
 graalvmNative {
     binaries {
         named("main") {
-            imageName.set("bakash-cli")
+            imageName.set("bakashi-cli")
             mainClass.set("dev.cwby.bakashi.Main")
             buildArgs.add("-O4")
         }
