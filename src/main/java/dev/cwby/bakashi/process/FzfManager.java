@@ -59,6 +59,7 @@ public class FzfManager {
       }
       writer.println(episodeData.episodeName());
     }
+    writer.write("CMD: Play All");
     writer.flush();
     writer.close();
   }
@@ -79,17 +80,11 @@ public class FzfManager {
     writer.close();
   }
 
-  public AnimePage waitForAnimeSelect() {
+  public String getResult() {
     try {
       final int exitCode = process.waitFor();
       if (exitCode == 0) {
-        final String output =
-            new BufferedReader(new InputStreamReader(process.getInputStream())).readLine();
-        for (final AnimePage page : animePageList) {
-          if (page.title().equals(output)) {
-            return page;
-          }
-        }
+        return new BufferedReader(new InputStreamReader(process.getInputStream())).readLine();
       }
     } catch (InterruptedException | IOException e) {
       throw new RuntimeException(e);
@@ -97,20 +92,22 @@ public class FzfManager {
     return null;
   }
 
-  public EpisodeData waitForEpisodeSelect() {
-    try {
-      final int exitCode = process.waitFor();
-      if (exitCode == 0) {
-        final String output =
-            new BufferedReader(new InputStreamReader(process.getInputStream())).readLine();
-        for (final EpisodeData episodeData : episodeDataList) {
-          if (episodeData.episodeName().equals(output)) {
-            return episodeData;
-          }
-        }
+  public AnimePage waitForAnimeSelect() {
+    String result = getResult();
+    for (final AnimePage page : animePageList) {
+      if (page.title().equals(result)) {
+        return page;
       }
-    } catch (InterruptedException | IOException e) {
-      throw new RuntimeException(e);
+    }
+    return null;
+  }
+
+  public EpisodeData waitForEpisodeSelect() {
+    String result = getResult();
+    for (final EpisodeData episodeData : episodeDataList) {
+      if (episodeData.episodeName().equals(result)) {
+        return episodeData;
+      }
     }
     return null;
   }

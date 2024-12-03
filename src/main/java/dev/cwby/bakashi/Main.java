@@ -10,6 +10,8 @@ import dev.cwby.bakashi.scrapper.ScrapperManager;
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Main {
@@ -31,7 +33,7 @@ public class Main {
     FzfManager fzfManager = new FzfManager(new UeberzugManager());
     IScrapper scrapper = ScrapperManager.getScrapper("bakashi");
 
-    EpisodeData episodeToPlay = null;
+    List<EpisodeData> episodesToPlay = new ArrayList<>();
 
     for (int i = 0; i < args.length; i++) {
       final String arg = args[i];
@@ -46,7 +48,7 @@ public class Main {
         case "-l":
           fzfManager.spawn();
           fzfManager.writeEpisodes(scrapper.getLastEpisodes());
-          episodeToPlay = fzfManager.waitForEpisodeSelect();
+          episodesToPlay.add(fzfManager.waitForEpisodeSelect());
           break;
         case "-s":
           if (i < (args.length - 1)) {
@@ -60,7 +62,10 @@ public class Main {
               fzfManager.spawn();
               List<EpisodeData> episodes = scrapper.fetchEpisodesFromPage(page);
               fzfManager.writeEpisodes(episodes);
-              episodeToPlay = fzfManager.waitForEpisodeSelect();
+              String result = fzfManager.getResult();
+              if (result.equals("CMD: Play All")) {
+                episodesToPlay.addAll(episodes);
+              }
             }
           } else {
             System.out.println("Expected a value for -s, e.g 'naruto'");
@@ -77,9 +82,13 @@ public class Main {
     } catch (Exception e) {
     }
 
-    if (episodeToPlay != null) {
-      String videoUrl = scrapper.extractVideoUrl(episodeToPlay.episodeUrl());
-      spawnMpv(scrapper.referer(), videoUrl);
+    if (!episodesToPlay.isEmpty()) {
+      for (EpisodeData episode : episodesToPlay) {
+        if (episode != null) {
+          String videoUrl = scrapper.extractVideoUrl(episode.episodeUrl());
+          spawnMpv(scrapper.referer(), videoUrl);
+        }
+      }
     }
   }
 

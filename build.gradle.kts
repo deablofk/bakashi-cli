@@ -13,8 +13,6 @@ repositories {
 }
 
 dependencies {
-    testImplementation(platform("org.junit:junit-bom:5.10.0"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
     implementation("org.jsoup:jsoup:1.18.2")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.18.1")
 }
@@ -49,5 +47,7 @@ graalvmNative {
         buildArgs.add("--verbose")
         buildArgs.add("--enable-url-protocols=https")
         buildArgs.add("--enable-url-protocols=http")
+        buildArgs.add("--initialize-at-build-time=jdk.internal.net.http.HttpClientFacade")
+        buildArgs.add("--no-fallback")
     }
 }
