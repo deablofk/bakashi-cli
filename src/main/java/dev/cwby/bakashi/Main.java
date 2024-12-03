@@ -86,17 +86,25 @@ public class Main {
       for (EpisodeData episode : episodesToPlay) {
         if (episode != null) {
           String videoUrl = scrapper.extractVideoUrl(episode.episodeUrl());
-          spawnMpv(scrapper.referer(), videoUrl);
+          spawnMpv(scrapper.referer(), videoUrl, episode.episodeName());
         }
       }
     }
   }
 
   // TODO: maybe extract this to another class
-  private static void spawnMpv(String referer, String url)
+  private static void spawnMpv(String referer, String url, String title)
       throws IOException, InterruptedException {
     new ProcessBuilder(
-            "bash", "-c", "mpv -fs --http-header-fields='referer: " + referer + "' '" + url + "'")
+            "bash",
+            "-c",
+            "mpv -fs --force-media-title='"
+                + title
+                + "' --http-header-fields='referer: "
+                + referer
+                + "' '"
+                + url
+                + "'")
         .redirectOutput(ProcessBuilder.Redirect.DISCARD)
         .redirectError(ProcessBuilder.Redirect.DISCARD)
         .start()
