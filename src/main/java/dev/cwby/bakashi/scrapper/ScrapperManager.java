@@ -6,7 +6,7 @@ import java.util.Map;
 public class ScrapperManager {
 
   private static final Map<String, IScrapper> SCRAPPERS =
-      new HashMap<>(Map.of("bakashi", new BakashiScrapper(), "anroll", new AnrollScrapper()));
+      new HashMap<>(Map.of("anroll", new AnrollScrapper()));
 
   public static void registerScrapper(String key, IScrapper value) {
     SCRAPPERS.put(key.toLowerCase(), value);

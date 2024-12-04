@@ -11,7 +11,6 @@ import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class Main {
@@ -31,7 +30,7 @@ public class Main {
     makeTempDir();
 
     FzfManager fzfManager = new FzfManager(new UeberzugManager());
-    IScrapper scrapper = ScrapperManager.getScrapper("bakashi");
+    IScrapper scrapper = ScrapperManager.getScrapper("anroll");
 
     List<EpisodeData> episodesToPlay = new ArrayList<>();
 
@@ -42,7 +41,7 @@ public class Main {
           if (i < (args.length - 1)) {
             scrapper = ScrapperManager.getScrapperOrDefault(args[i + 1]);
           } else {
-            System.out.println("Expected a value for -o, e.g 'bakashi' or 'anroll'");
+            System.out.println("Expected a value for -o, e.g 'anroll' (is the only available)");
           }
           break;
         case "-l":
@@ -61,6 +60,7 @@ public class Main {
               fzfManager.exit();
               fzfManager.spawn();
               List<EpisodeData> episodes = scrapper.fetchEpisodesFromPage(page);
+              episodes.add(new EpisodeData("CMD: Play All", null, null));
               fzfManager.writeEpisodes(episodes);
               String result = fzfManager.getResult();
               if (result.equals("CMD: Play All")) {
@@ -89,6 +89,8 @@ public class Main {
           spawnMpv(scrapper.referer(), videoUrl, episode.episodeName());
         }
       }
+    } else {
+      displayHelp();
     }
   }
 
@@ -112,7 +114,12 @@ public class Main {
   }
 
   private static void displayHelp() {
-    System.out.println(
-        "Bakashi-CLI 1.0\n\nUsage: bakashi-cli [options]\n\nOPTIONS:\n\t-s\t\"anime search\"\n\t-d\t can be \"bakashi\" or \"anroll\", get the latests episodes");
+    var builder = new StringBuilder();
+    builder.append("Bakashi-CLI 1.0\n\n");
+    builder.append("OPTIONS:\n");
+    builder.append("\t-s").append("\tanime search\n");
+    builder.append("\t-l").append("\tdisplay the latests episodes available\n");
+    builder.append("\t-o").append("\tset the origin for search: anroll\n");
+    System.out.println(builder);
   }
 }

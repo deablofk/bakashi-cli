@@ -59,7 +59,6 @@ public class FzfManager {
       }
       writer.println(episodeData.episodeName());
     }
-    writer.write("CMD: Play All");
     writer.flush();
     writer.close();
   }
