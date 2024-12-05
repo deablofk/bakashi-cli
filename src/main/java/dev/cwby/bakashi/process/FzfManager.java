@@ -91,6 +91,15 @@ public class FzfManager {
     return null;
   }
 
+  public EpisodeData getEpisodeDataFromResult(final String result) {
+    for (final EpisodeData episodeData : episodeDataList) {
+      if (episodeData.episodeName().equals(result)) {
+        return episodeData;
+      }
+    }
+    return null;
+  }
+
   public AnimePage waitForAnimeSelect() {
     String result = getResult();
     for (final AnimePage page : animePageList) {
@@ -102,13 +111,7 @@ public class FzfManager {
   }
 
   public EpisodeData waitForEpisodeSelect() {
-    String result = getResult();
-    for (final EpisodeData episodeData : episodeDataList) {
-      if (episodeData.episodeName().equals(result)) {
-        return episodeData;
-      }
-    }
-    return null;
+    return getEpisodeDataFromResult(getResult());
   }
 
   public void exit() {

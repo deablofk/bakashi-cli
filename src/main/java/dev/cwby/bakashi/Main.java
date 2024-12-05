@@ -65,6 +65,8 @@ public class Main {
               String result = fzfManager.getResult();
               if (result.equals("CMD: Play All")) {
                 episodesToPlay.addAll(episodes);
+              } else {
+                episodesToPlay.add(fzfManager.getEpisodeDataFromResult(result));
               }
             }
           } else {
