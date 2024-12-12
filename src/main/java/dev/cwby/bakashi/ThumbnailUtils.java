@@ -9,6 +9,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.CompletableFuture;
 
 public class ThumbnailUtils {
 
@@ -62,6 +63,30 @@ public class ThumbnailUtils {
       fos.write(outputStream.toByteArray());
       return thumbnailPath;
     }
+  }
+
+  /**
+   * Asynchronously downloads the thumbnail image from the given URL and saves it in the temporary
+   * folder for later use.
+   *
+   * <p>This method fetches the thumbnail in a non-blocking manner and stores it on disk at the path
+   * specified by the given file name.
+   *
+   * @param thumbnailUrl The URL of the thumbnail image to download.
+   * @param fileName The name to assign to the downloaded thumbnail file.
+   * @return A {@link CompletableFuture} containing the {@link Path} to the saved thumbnail file.
+   */
+  public static CompletableFuture<Path> fetchThumbnailAsync(
+      final String thumbnailUrl, final String fileName) {
+    return CompletableFuture.supplyAsync(() -> getThumbnailPath(fileName))
+        .thenApply(
+            thumbnailPath -> {
+              try {
+                return fetchThumbnail(thumbnailUrl, fileName);
+              } catch (IOException e) {
+                throw new RuntimeException(e);
+              }
+            });
   }
 
   /**

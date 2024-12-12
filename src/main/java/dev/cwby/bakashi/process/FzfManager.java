@@ -68,10 +68,7 @@ public class FzfManager {
     final PrintWriter writer = new PrintWriter(process.getOutputStream());
     for (final AnimePage page : animePageList) {
       if (!ThumbnailUtils.thumbnailExists(page.title())) {
-        try {
-          ThumbnailUtils.fetchThumbnail(page.thumbnail(), page.title());
-        } catch (IOException e) {
-        }
+        ThumbnailUtils.fetchThumbnailAsync(page.thumbnail(), page.title());
       }
       writer.println(page.title());
     }
