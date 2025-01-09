@@ -5,10 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.cwby.bakashi.data.AnimePage;
 import dev.cwby.bakashi.data.EpisodeData;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -16,6 +12,9 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 public class AnrollScrapper implements IScrapper {
 
@@ -115,7 +114,7 @@ public class AnrollScrapper implements IScrapper {
 
   private Elements extractArticlesFromDashboard(final Document document) {
     return document
-        .select("#__next > main > div.sc-b2878e96-1.dburWc > ul")
+        .selectXpath("//*[@id=\"__next\"]/main/div[4]/ul")
         .getFirst()
         .getElementsByTag("li");
   }
