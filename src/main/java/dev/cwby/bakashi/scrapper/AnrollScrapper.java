@@ -23,7 +23,7 @@ public class AnrollScrapper implements IScrapper {
 
   @Override
   public String referer() {
-    return "https://anroll.net";
+    return "https://www.anroll.net";
   }
 
   @Override
